@@ -110,7 +110,7 @@
               <!-- Admin/Faculty: Admin entry -->
               <Sidebar.MenuItem>
                 <Sidebar.MenuButton
-                  isActive={pathname.startsWith('dashboard/admin/')}
+                  isActive={pathname.startsWith('/dashboard/admin/')}
                   tooltipContent="Admin"
                 >
                   {#snippet child({ props })}
