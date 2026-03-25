@@ -174,7 +174,7 @@
       <div>
         <Card.Title
           >{chartModeLabel} per phase
-          {#if selectedLabName}
+          {#if typeof selectedLabName !== 'undefined' && selectedLabName !== null}
             &mdash; <Badge variant="secondary">{selectedLabName}</Badge>
           {:else}
             &mdash; <Badge variant="default">All labs</Badge>
@@ -267,7 +267,7 @@
         </g>
       {/each}
 
-      {#if hoveredPoint}
+      {#if hoveredPoint !== null}
         {@const tooltipX = hoveredPoint.x - 5}
         {@const tooltipY = Math.min(hoveredPoint.y + 25, padding.top + chartHeight - 20)}
         <rect
