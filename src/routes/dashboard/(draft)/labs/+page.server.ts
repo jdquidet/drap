@@ -3,7 +3,6 @@ import { decode } from 'decode-formdata';
 import { error, redirect } from '@sveltejs/kit';
 
 import { db } from '$lib/server/database';
-import { validateBigInt } from '$lib/validators';
 import {
   deleteLab,
   getActiveDraft,
@@ -15,6 +14,7 @@ import {
 } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { validateBigInt } from '$lib/validators';
 
 const LabFormData = v.object({
   labId: v.pipe(v.string(), v.minLength(1)),
@@ -102,8 +102,8 @@ export const actions = {
           }
           if (clientDraftId !== null && clientDraftId !== activeDraft?.id) {
             logger.fatal('draft id mismatch', void 0, {
-                'draft.client_id': clientDraftId?.toString(),
-                'draft.active_id': activeDraft?.id.toString(),
+              'draft.client_id': clientDraftId?.toString(),
+              'draft.active_id': activeDraft?.id.toString(),
             });
             error(403, 'Invalid draft.');
           }
@@ -156,8 +156,8 @@ export const actions = {
           }
           if (clientDraftId !== null && clientDraftId !== activeDraft?.id) {
             logger.fatal('draft id mismatch', void 0, {
-                'draft.client_id': clientDraftId?.toString(),
-                'draft.active_id': activeDraft?.id.toString(),
+              'draft.client_id': clientDraftId?.toString(),
+              'draft.active_id': activeDraft?.id.toString(),
             });
             error(403, 'Invalid draft.');
           }
@@ -210,8 +210,8 @@ export const actions = {
           }
           if (clientDraftId !== null && clientDraftId !== activeDraft?.id) {
             logger.fatal('draft id mismatch', void 0, {
-                'draft.client_id': clientDraftId?.toString(),
-                'draft.active_id': activeDraft?.id.toString(),
+              'draft.client_id': clientDraftId?.toString(),
+              'draft.active_id': activeDraft?.id.toString(),
             });
             error(403, 'Invalid draft.');
           }
