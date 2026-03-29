@@ -15,15 +15,15 @@ import { validateBigInt } from '$lib/validators';
 const SERVICE_NAME = 'routes.dashboard.admin.drafts.system-logs-csv';
 const logger = Logger.byName(SERVICE_NAME);
 
-function determineAction(userId: string | null, studentEmails: string[]): string {
-  if (userId === null) return 'System automation';
+function determineAction(userEmail: string | null, studentEmails: string[]): string {
+  if (userEmail === null) return 'System automation';
   if (studentEmails.length === 0) return 'No students selected';
   return 'Selected students';
 }
 
 function formatSystemLogForCsv(record: SystemLogsExportRecord) {
   const roundDisplay = record.round === null ? 'Lottery' : record.round;
-  const action = determineAction(record.userId, record.studentEmails);
+  const action = determineAction(record.userEmail, record.studentEmails);
 
   return {
     Timestamp: record.createdAt.toISOString(),
