@@ -5,6 +5,7 @@ import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/database';
 import {
   deleteLab,
+  getActiveDraft,
   getDraftByIdForShare,
   getLabRegistry,
   insertNewLab,
@@ -17,17 +18,17 @@ import { Tracer } from '$lib/server/telemetry/tracer';
 const LabFormData = v.object({
   labId: v.pipe(v.string(), v.minLength(1)),
   name: v.pipe(v.string(), v.minLength(1)),
-  draftIdRaw: v.optional(v.pipe(v.string(), v.minLength(0))),
+  draftIdRaw: v.pipe(v.string(), v.minLength(0)),
 });
 
 const ArchiveFormData = v.object({
   archive: v.pipe(v.string(), v.minLength(1)),
-  draftIdRaw: v.optional(v.pipe(v.string(), v.minLength(0))),
+  draftIdRaw: v.pipe(v.string(), v.minLength(0)),
 });
 
 const RestoreFormData = v.object({
   restore: v.pipe(v.string(), v.minLength(1)),
-  draftIdRaw: v.optional(v.pipe(v.string(), v.minLength(0))),
+  draftIdRaw: v.pipe(v.string(), v.minLength(0)),
 });
 
 const SERVICE_NAME = 'routes.dashboard.admin.labs';
@@ -92,10 +93,17 @@ export const actions = {
       await db.transaction(
         async db => {
           await lockLabCatalogForMutation(db);
+          const activeDraft = await getActiveDraft(db);
+          const clientDraftId = draftIdRaw === '' ? null : BigInt(draftIdRaw);
+          if (clientDraftId !== null && clientDraftId !== activeDraft?.id) {
+            logger.fatal('draft id mismatch', void 0, {
+              clientDraftId: clientDraftId?.toString(),
+              activeDraftId: activeDraft?.id.toString(),
+            });
+            error(403, 'Invalid draft.');
+          }
           const draft =
-            draftIdRaw && draftIdRaw !== ''
-              ? await getDraftByIdForShare(db, BigInt(draftIdRaw))
-              : null;
+            clientDraftId === null ? null : await getDraftByIdForShare(db, clientDraftId);
           if (typeof draft !== 'undefined' && draft !== null && draft.currRound === 0) {
             logger.fatal('cannot mutate lab catalog during registration');
             error(403, 'Cannot modify labs while draft registration is ongoing.');
@@ -131,10 +139,17 @@ export const actions = {
       await db.transaction(
         async db => {
           await lockLabCatalogForMutation(db);
+          const activeDraft = await getActiveDraft(db);
+          const clientDraftId = draftIdRaw === '' ? null : BigInt(draftIdRaw);
+          if (clientDraftId !== null && clientDraftId !== activeDraft?.id) {
+            logger.fatal('draft id mismatch', void 0, {
+              clientDraftId: clientDraftId?.toString(),
+              activeDraftId: activeDraft?.id.toString(),
+            });
+            error(403, 'Invalid draft.');
+          }
           const draft =
-            draftIdRaw && draftIdRaw !== ''
-              ? await getDraftByIdForShare(db, BigInt(draftIdRaw))
-              : null;
+            clientDraftId === null ? null : await getDraftByIdForShare(db, clientDraftId);
           if (typeof draft !== 'undefined' && draft !== null && draft.currRound === 0) {
             logger.fatal('cannot mutate lab catalog during registration');
             error(403, 'Cannot modify labs while draft registration is ongoing.');
@@ -170,10 +185,17 @@ export const actions = {
       await db.transaction(
         async db => {
           await lockLabCatalogForMutation(db);
+          const activeDraft = await getActiveDraft(db);
+          const clientDraftId = draftIdRaw === '' ? null : BigInt(draftIdRaw);
+          if (clientDraftId !== null && clientDraftId !== activeDraft?.id) {
+            logger.fatal('draft id mismatch', void 0, {
+              clientDraftId: clientDraftId?.toString(),
+              activeDraftId: activeDraft?.id.toString(),
+            });
+            error(403, 'Invalid draft.');
+          }
           const draft =
-            draftIdRaw && draftIdRaw !== ''
-              ? await getDraftByIdForShare(db, BigInt(draftIdRaw))
-              : null;
+            clientDraftId === null ? null : await getDraftByIdForShare(db, clientDraftId);
           if (typeof draft !== 'undefined' && draft !== null && draft.currRound === 0) {
             logger.fatal('cannot mutate lab catalog during registration');
             error(403, 'Cannot modify labs while draft registration is ongoing.');
