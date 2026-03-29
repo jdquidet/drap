@@ -33,7 +33,7 @@
   const chartWidth = width - PADDING_LEFT - PADDING_RIGHT;
   const chartHeight = height - PADDING_TOP - PADDING_BOTTOM;
 
-  let selectedLabId = $state<string | null>(null);
+  let selectedLabId = $state<string>('');
   let hoveredPoint = $state<{
     label: string;
     count: number;
@@ -43,7 +43,7 @@
   } | null>(null);
 
   const chartFilter = $derived.by(() => {
-    if (selectedLabId === null)
+    if (selectedLabId === '')
       return {
         filteredRecords: records,
         filteredInterventionRecords: interventionRecords,
@@ -103,7 +103,7 @@
     let maxY = Math.max(maxCount, 1);
     if (chartMode === 'remaining')
       maxY = Math.max(
-        selectedLabId === null || chartFilter.selectedLabQuota === null
+        selectedLabId === '' || chartFilter.selectedLabQuota === null
           ? totalStudents
           : chartFilter.selectedLabQuota,
         1,
@@ -143,7 +143,7 @@
   const chartMax = $derived.by(() => {
     if (chartMode === 'remaining')
       return Math.max(
-        selectedLabId !== null && chartFilter.selectedLabQuota
+        selectedLabId !== '' && chartFilter.selectedLabQuota !== null
           ? chartFilter.selectedLabQuota
           : totalStudents,
         1,
@@ -172,11 +172,11 @@
     return ticks;
   });
   const selectedLabName = $derived(
-    selectedLabId === null ? null : labs.find(l => l.id === selectedLabId)?.name,
+    selectedLabId === '' ? null : labs.find(l => l.id === selectedLabId)?.name,
   );
   const chartModeLabel = $derived.by(() => {
     if (chartMode === 'assigned') return 'Students assigned';
-    if (selectedLabId === null) return 'Students not yet assigned';
+    if (selectedLabId === '') return 'Students not yet assigned';
     return 'Labs remaining quota';
   });
 </script>
@@ -258,7 +258,7 @@
       />
 
       {#each chartData as point, index (point.label)}
-        {@const remaining = !(selectedLabId === null || chartFilter.selectedLabQuota === null)
+        {@const remaining = !(selectedLabId === '' || chartFilter.selectedLabQuota === null)
           ? Math.max(0, chartFilter.selectedLabQuota - cumulativeUpTo(index, chartData))
           : Math.max(0, totalStudents - cumulativeUpTo(index, chartData))}
         <g
