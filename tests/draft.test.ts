@@ -366,7 +366,7 @@ test.describe('Draft Lifecycle', () => {
         const data = new FormData();
         data.set('labId', 'test');
         data.set('name', 'Test Lab');
-        const draftInput = document.querySelector('input[name="draft"]');
+        const draftInput = document.querySelector('input[name="draftIdRaw"]');
         if (draftInput instanceof HTMLInputElement && draftInput.value)
           data.set('draftIdRaw', draftInput.value);
 
@@ -384,7 +384,7 @@ test.describe('Draft Lifecycle', () => {
       const status = await adminPage.evaluate(async () => {
         const data = new FormData();
         data.set('archive', 'ndsl');
-        const draftInput = document.querySelector('input[name="draft"]');
+        const draftInput = document.querySelector('input[name="draftIdRaw"]');
         if (draftInput instanceof HTMLInputElement && draftInput.value)
           data.set('draftIdRaw', draftInput.value);
 
@@ -402,7 +402,7 @@ test.describe('Draft Lifecycle', () => {
       const status = await adminPage.evaluate(async () => {
         const data = new FormData();
         data.set('restore', 'ndsl');
-        const draftInput = document.querySelector('input[name="draft"]');
+        const draftInput = document.querySelector('input[name="draftIdRaw"]');
         if (draftInput instanceof HTMLInputElement && draftInput.value)
           data.set('draftIdRaw', draftInput.value);
 

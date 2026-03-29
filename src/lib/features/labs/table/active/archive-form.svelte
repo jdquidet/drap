@@ -41,7 +41,7 @@
     };
   }}
 >
-  <input type="hidden" name="draft" value={draftId ?? ''} />
+  <input type="hidden" name="draftIdRaw" value={draftId ?? ''} />
   <input type="hidden" name="archive" value={labId} />
   <Tooltip>
     <TooltipTrigger>
