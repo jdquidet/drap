@@ -4,20 +4,24 @@ import { lightFormat } from 'date-fns';
 import { TZDate } from '@date-fns/tz';
 
 import { db } from '$lib/server/database';
-import { getDraftById, getSystemLogsExport } from '$lib/server/database/drizzle';
+import {
+  getDraftById,
+  getSystemLogsExport,
+  type SystemLogsExportRecord,
+} from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { validateBigInt } from '$lib/validators';
 
 const SERVICE_NAME = 'routes.dashboard.admin.drafts.system-logs-csv';
 const logger = Logger.byName(SERVICE_NAME);
 
-function determineAction(userId, studentEmails) {
+function determineAction(userId: string | null, studentEmails: string[]): string {
   if (userId === null) return 'System automation';
   if (studentEmails.length === 0) return 'No students selected';
   return 'Selected students';
 }
 
-function formatSystemLogForCsv(record) {
+function formatSystemLogForCsv(record: SystemLogsExportRecord) {
   const roundDisplay = record.round === null ? 'Lottery' : record.round;
   const action = determineAction(record.userId, record.studentEmails);
 
