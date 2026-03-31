@@ -34,15 +34,15 @@
     <Tabs.List class="w-full">
       <Tabs.Trigger value="students">
         <GraduationCapIcon class="size-5" />
-        <span class="hidden sm:inline">Registered Students</span>
+        <span class="sr-only sm:not-sr-only">Registered Students</span>
       </Tabs.Trigger>
       <Tabs.Trigger value="labs">
         <FlaskConicalIcon class="size-5" />
-        <span class="hidden sm:inline">Laboratories</span>
+        <span class="sr-only sm:not-sr-only">Laboratories</span>
       </Tabs.Trigger>
       <Tabs.Trigger value="logs">
         <PaperclipIcon class="size-5" />
-        <span class="hidden sm:inline">System Logs</span>
+        <span class="sr-only sm:not-sr-only">System Logs</span>
       </Tabs.Trigger>
     </Tabs.List>
   </div>
