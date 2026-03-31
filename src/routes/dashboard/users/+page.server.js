@@ -22,7 +22,7 @@ const FacultyFormData = v.object({
 });
 
 const DeleteInviteFormData = v.object({
-  id: v.string(),
+  id: v.pipe(v.string(), v.minLength(1)),
 });
 
 const SERVICE_NAME = 'routes.dashboard.users';

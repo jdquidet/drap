@@ -2004,7 +2004,13 @@ export async function deleteInvitation(db: DbConnection, id: string) {
     span.setAttribute('database.user.id', id);
     const { rowCount } = await db
       .delete(schema.user)
-      .where(and(eq(schema.user.id, id), isNull(schema.user.googleUserId)));
+      .where(
+        and(
+          eq(schema.user.id, id),
+          eq(schema.user.isAdmin, true),
+          isNull(schema.user.googleUserId),
+        ),
+      );
     switch (rowCount) {
       case 0:
         return false;
