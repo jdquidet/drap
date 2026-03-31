@@ -1,41 +1,69 @@
 <script lang="ts">
+  import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+
   import * as Card from '$lib/components/ui/card';
+  import Faculty from '$lib/users/faculty.svelte';
 
   import AdminForm from './admin-form.svelte';
   import FacultyForm from './faculty-form.svelte';
-  import InvitedVersusRegistered from './invited-versus-registered.svelte';
+  import InviteSheet from './invite-sheet.svelte';
 
   const { data } = $props();
   const { labs, faculty } = $derived(data);
   const users = $derived(
-    Object.groupBy(faculty, ({ googleUserId, labName }) => {
-      const isAdmin = labName === null;
-      if (googleUserId === null) return isAdmin ? 'invitedAdmins' : 'invitedHeads';
-      return isAdmin ? 'registeredAdmins' : 'registeredHeads';
+    Object.groupBy(faculty, ({ labName }) => {
+      return labName === null ? 'registeredAdmins' : 'registeredHeads';
     }),
   );
-  const invitedAdmins = $derived(users.invitedAdmins ?? []);
-  const invitedHeads = $derived(users.invitedHeads ?? []);
   const registeredAdmins = $derived(users.registeredAdmins ?? []);
   const registeredHeads = $derived(users.registeredHeads ?? []);
+
+  const queryClient = new QueryClient();
 </script>
 
-<h2 class="scroll-m-20 text-3xl font-semibold tracking-tight">Users</h2>
-<Card.Root>
-  <Card.Header>
-    <Card.Title>Lab Heads</Card.Title>
-  </Card.Header>
-  <Card.Content class="space-y-4">
-    <FacultyForm {labs} />
-    <InvitedVersusRegistered invited={invitedHeads} registered={registeredHeads} />
-  </Card.Content>
-</Card.Root>
-<Card.Root>
-  <Card.Header>
-    <Card.Title>Draft Administrators</Card.Title>
-  </Card.Header>
-  <Card.Content class="space-y-4">
-    <AdminForm />
-    <InvitedVersusRegistered invited={invitedAdmins} registered={registeredAdmins} />
-  </Card.Content>
-</Card.Root>
+<QueryClientProvider client={queryClient}>
+  <h2 class="mb-6 scroll-m-20 text-3xl font-semibold tracking-tight">Users</h2>
+  <Card.Root>
+    <Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
+      <Card.Title class="text-2xl">Lab Heads</Card.Title>
+      <InviteSheet type="heads" {queryClient}>
+        {#snippet inviteForm()}
+          <FacultyForm {labs} {queryClient} />
+        {/snippet}
+      </InviteSheet>
+    </Card.Header>
+    <Card.Content>
+      {#if registeredHeads.length === 0}
+        <p class="text-sm text-muted-foreground">No registered users.</p>
+      {:else}
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {#each registeredHeads as { id, ...head } (id)}
+            <Faculty user={head} />
+          {/each}
+        </div>
+      {/if}
+    </Card.Content>
+  </Card.Root>
+
+  <Card.Root>
+    <Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
+      <Card.Title class="text-2xl">Draft Administrators</Card.Title>
+      <InviteSheet type="admins" {queryClient}>
+        {#snippet inviteForm()}
+          <AdminForm {queryClient} />
+        {/snippet}
+      </InviteSheet>
+    </Card.Header>
+    <Card.Content>
+      {#if registeredAdmins.length === 0}
+        <p class="text-sm text-muted-foreground">No registered users.</p>
+      {:else}
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {#each registeredAdmins as { id, ...head } (id)}
+            <Faculty user={head} />
+          {/each}
+        </div>
+      {/if}
+    </Card.Content>
+  </Card.Root>
+</QueryClientProvider>
