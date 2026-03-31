@@ -14,6 +14,7 @@ import {
   isNotNull,
   isNull,
   lte,
+  ne,
   or,
   sql,
 } from 'drizzle-orm';
@@ -1142,6 +1143,61 @@ export async function getLabSelectedStudentCountInDraftRound(
       )
       .then(assertSingle);
     return studentCount;
+  });
+}
+
+/**
+ * Validates that all submitted students chose the specified lab for the given round.
+ * Returns a Set of valid student user IDs that match the criteria.
+ */
+export async function validateStudentsChoseLabInRound(
+  db: DrizzleTransaction,
+  draftId: bigint,
+  labId: string,
+  round: number,
+  studentUserIds: string[],
+) {
+  return await tracer.asyncSpan('validate-students-chose-lab-in-round', async span => {
+    span.setAttributes({
+      'database.draft.id': draftId.toString(),
+      'database.lab.id': labId,
+      'database.round': round,
+      'database.student.count': studentUserIds.length,
+    });
+
+    if (studentUserIds.length === 0) return new Set();
+
+    // Subquery to find students already drafted by a DIFFERENT lab (or different round of same lab).
+    // These students are invalid selections regardless of their preference.
+    const draftedByOtherLab = db
+      .select({ studentUserId: schema.facultyChoiceUser.studentUserId })
+      .from(schema.facultyChoiceUser)
+      .where(
+        and(
+          eq(schema.facultyChoiceUser.draftId, draftId),
+          or(
+            ne(schema.facultyChoiceUser.labId, labId),
+            ne(schema.facultyChoiceUser.round, round),
+            isNull(schema.facultyChoiceUser.round),
+          ),
+        ),
+      );
+
+    const validRows = await db
+      .select({ userId: schema.studentRankLab.userId })
+      .from(schema.studentRankLab)
+      .where(
+        and(
+          eq(schema.studentRankLab.draftId, draftId),
+          eq(schema.studentRankLab.labId, labId),
+          eq(schema.studentRankLab.index, BigInt(round)),
+          inArray(schema.studentRankLab.userId, studentUserIds),
+          sql`${schema.studentRankLab.userId} not in (${draftedByOtherLab})`,
+        ),
+      )
+      .for('update');
+
+    return new Set(validRows.map(({ userId }) => userId));
   });
 }
 

@@ -61,12 +61,18 @@ async function expectStudentsCallout(
   await expect(page.getByRole('button', { name: 'Update Selection' })).toHaveCount(0);
 }
 
-async function postFacultyRankings(page: Page, draft: number, round: number) {
+async function postFacultyRankings(
+  page: Page,
+  draft: number,
+  round: number,
+  students: string[] = [],
+) {
   return await page.evaluate(
-    async ({ draft, round }) => {
+    async ({ draft, round, students }) => {
       const data = new FormData();
       data.set('draft', String(draft));
       data.set('round', String(round));
+      for (const student of students) data.append('students', student);
 
       const response = await fetch('/dashboard/students/?/rankings', {
         method: 'POST',
@@ -75,7 +81,7 @@ async function postFacultyRankings(page: Page, draft: number, round: number) {
 
       return response.status;
     },
-    { draft, round },
+    { draft, round, students },
   );
 }
 
@@ -1155,6 +1161,83 @@ test.describe('Draft Lifecycle', () => {
         [/202012349/u, /202012348/u, /202012350/u],
         [/202012345/u, /202012346/u],
       );
+    });
+  });
+
+  test.describe('Server-side validation security', () => {
+    // Tests that bypass UI to verify backend rejects invalid student selections.
+    // These tests simulate malicious payloads sent directly to the API.
+
+    test('rejects fabricated student ID', async ({ ndslHeadPage }) => {
+      await ndslHeadPage.goto('/dashboard/students/');
+      const status = await postFacultyRankings(ndslHeadPage, 1, 2, ['nonexistent-user-id-12345']);
+
+      expect(status).toBe(409);
+    });
+
+    test('rejects student who chose different lab for current round', async ({
+      ndslHeadPage,
+      persistentHopefulUserId,
+    }) => {
+      // Persistent has SCL(1) > CVMIL(2) > ACL(3) — never chose NDSL.
+      // NDSL trying to select Persistent in Round 2 should fail.
+      await ndslHeadPage.goto('/dashboard/students/');
+      const status = await postFacultyRankings(ndslHeadPage, 1, 2, [persistentHopefulUserId]);
+
+      expect(status).toBe(409);
+    });
+
+    test('rejects student whose lab preference is in different round', async ({
+      ndslHeadPage,
+      unluckyFullRankerUserId,
+    }) => {
+      // Unlucky has ACL(1) > CVMIL(2) > NDSL(3) — NDSL is 3rd choice, not 2nd.
+      // NDSL trying to select Unlucky in Round 2 should fail.
+      await ndslHeadPage.goto('/dashboard/students/');
+      const status = await postFacultyRankings(ndslHeadPage, 1, 2, [unluckyFullRankerUserId]);
+
+      expect(status).toBe(409);
+    });
+
+    test('rejects already-drafted student even if preference matches current round', async ({
+      ndslHeadPage,
+      patientCandidateUserId,
+    }) => {
+      // Patient has CSL(1) > NDSL(2) > SCL(3) and was drafted by CSL in Round 1.
+      // In Round 2, Patient's 2nd choice is NDSL — but Patient is already drafted.
+      // This tests the already-drafted filter, not round-index mismatch.
+      await ndslHeadPage.goto('/dashboard/students/');
+      const status = await postFacultyRankings(ndslHeadPage, 1, 2, [patientCandidateUserId]);
+
+      expect(status).toBe(409);
+    });
+
+    test('rejects student who never submitted rankings', async ({
+      ndslHeadPage,
+      idleBystanderUserId,
+    }) => {
+      // Idle never submitted any lab preferences.
+      // NDSL trying to select Idle should fail.
+      await ndslHeadPage.goto('/dashboard/students/');
+      const status = await postFacultyRankings(ndslHeadPage, 1, 2, [idleBystanderUserId]);
+
+      expect(status).toBe(409);
+    });
+
+    test('rejects batch with mix of valid and invalid students', async ({
+      ndslHeadPage,
+      persistentHopefulUserId,
+      eagerDrafteeUserId,
+    }) => {
+      // Send one invalid student (Persistent - never chose NDSL) mixed with a drafted one.
+      // Should reject entire batch.
+      await ndslHeadPage.goto('/dashboard/students/');
+      const status = await postFacultyRankings(ndslHeadPage, 1, 2, [
+        persistentHopefulUserId,
+        eagerDrafteeUserId,
+      ]);
+
+      expect(status).toBe(409);
     });
   });
 
