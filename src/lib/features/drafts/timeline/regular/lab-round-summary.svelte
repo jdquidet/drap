@@ -15,9 +15,9 @@
 </script>
 
 <div
-  class="flex w-full flex-col border-b px-1 py-2 text-left last:border-0 lg:flex-row lg:justify-between"
+  class="grid w-full gap-2 border-b px-1 py-2 text-left last:border-0 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start"
 >
-  <div class="flex flex-col gap-2 overflow-auto lg:flex-row">
+  <div class="grid min-w-0 gap-2 lg:grid-cols-[auto_minmax(0,1fr)] lg:items-start lg:gap-3">
     {#if lab.quota !== 0}
       <Badge
         variant="outline"
@@ -26,15 +26,13 @@
         {lab.quota} maximum
       </Badge>
     {/if}
-    <div class="flex h-8 gap-1 overflow-auto whitespace-nowrap">
-      {#if lab.quota === 0}
-        <h5 class="text-lg font-medium text-muted-foreground">{lab.name}</h5>
-      {:else}
-        <h5 class="text-lg font-medium">{lab.name}</h5>
-      {/if}
-    </div>
+    {#if lab.quota === 0}
+      <h5 class="text-lg leading-5 font-medium text-muted-foreground">{lab.name}</h5>
+    {:else}
+      <h5 class="text-lg leading-5 font-medium">{lab.name}</h5>
+    {/if}
   </div>
-  <div class="flex gap-1 sm:items-end">
+  <div class="flex gap-1 lg:self-start">
     <!-- Members -->
     <DraftedDraftees {draftId} {lab} />
     <!-- Preferred -->

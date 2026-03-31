@@ -31,18 +31,18 @@
   }}
 >
   <div class="flex justify-around sm:justify-normal">
-    <Tabs.List class="w-full">
+    <Tabs.List class="w-full grid grid-cols-3 h-full">
       <Tabs.Trigger value="students">
         <GraduationCapIcon class="size-5" />
-        <span class="sr-only sm:not-sr-only">Registered Students</span>
+        <span class="sr-only md:not-sr-only">Registered Students</span>
       </Tabs.Trigger>
       <Tabs.Trigger value="labs">
         <FlaskConicalIcon class="size-5" />
-        <span class="sr-only sm:not-sr-only">Laboratories</span>
+        <span class="sr-only md:not-sr-only">Laboratories</span>
       </Tabs.Trigger>
       <Tabs.Trigger value="logs">
         <PaperclipIcon class="size-5" />
-        <span class="sr-only sm:not-sr-only">System Logs</span>
+        <span class="sr-only md:not-sr-only">System Logs</span>
       </Tabs.Trigger>
     </Tabs.List>
   </div>
