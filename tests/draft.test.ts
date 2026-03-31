@@ -1208,6 +1208,19 @@ test.describe('Draft Lifecycle', () => {
       expect(status).toBe(409);
     });
 
+    test('rejects student drafted by another lab even if preference matches', async ({
+      ndslHeadPage,
+      patientCandidateUserId,
+    }) => {
+      // Patient has CSL(1) > NDSL(2) > SCL(3) and was drafted by CSL in Round 1.
+      // In Round 2, Patient's 2nd choice is NDSL — but Patient is already drafted.
+      // NDSL maliciously trying to select Patient should fail.
+      await ndslHeadPage.goto('/dashboard/students/');
+      const status = await postFacultyRankings(ndslHeadPage, 1, 2, [patientCandidateUserId]);
+
+      expect(status).toBe(409);
+    });
+
     test('rejects student who never submitted rankings', async ({
       ndslHeadPage,
       idleBystanderUserId,

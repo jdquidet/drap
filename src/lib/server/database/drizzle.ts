@@ -1166,6 +1166,21 @@ export async function validateStudentsChoseLabInRound(
 
     if (studentUserIds.length === 0) return new Set();
 
+    // Subquery to find students already drafted by a DIFFERENT lab (or different round of same lab).
+    // These students are invalid selections regardless of their preference.
+    const draftedByOtherLab = db
+      .select({ studentUserId: schema.facultyChoiceUser.studentUserId })
+      .from(schema.facultyChoiceUser)
+      .where(
+        and(
+          eq(schema.facultyChoiceUser.draftId, draftId),
+          or(
+            sql`${schema.facultyChoiceUser.labId} != ${labId}`,
+            sql`${schema.facultyChoiceUser.round} != ${round}`,
+          ),
+        ),
+      );
+
     const validRows = await db
       .select({ userId: schema.studentRankLab.userId })
       .from(schema.studentRankLab)
@@ -1175,6 +1190,7 @@ export async function validateStudentsChoseLabInRound(
           eq(schema.studentRankLab.labId, labId),
           eq(schema.studentRankLab.index, BigInt(round)),
           inArray(schema.studentRankLab.userId, studentUserIds),
+          sql`${schema.studentRankLab.userId} NOT IN (${draftedByOtherLab})`,
         ),
       )
       .for('update');
