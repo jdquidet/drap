@@ -14,6 +14,7 @@ import {
   isNotNull,
   isNull,
   lte,
+  ne,
   or,
   sql,
 } from 'drizzle-orm';
@@ -1175,8 +1176,9 @@ export async function validateStudentsChoseLabInRound(
         and(
           eq(schema.facultyChoiceUser.draftId, draftId),
           or(
-            sql`${schema.facultyChoiceUser.labId} != ${labId}`,
-            sql`${schema.facultyChoiceUser.round} != ${round}`,
+            ne(schema.facultyChoiceUser.labId, labId),
+            ne(schema.facultyChoiceUser.round, round),
+            isNull(schema.facultyChoiceUser.round),
           ),
         ),
       );
