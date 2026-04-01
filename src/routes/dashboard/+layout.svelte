@@ -1,8 +1,8 @@
-<script lang="ts">
+<script>
   import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 
   import BottomNav from '$lib/components/bottom-nav.svelte';
-  import { dev } from '$app/environment';
+  import { browser, dev } from '$app/environment';
   import { DevTools } from '$lib/features/dev-tools';
   import { SidebarProvider } from '$lib/components/ui/sidebar';
   import { Toaster } from '$lib/components/ui/sonner';
@@ -15,6 +15,7 @@
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
+        enabled: browser,
         staleTime: Infinity,
         refetchOnMount: false,
       },
