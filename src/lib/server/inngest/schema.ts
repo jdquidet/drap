@@ -34,7 +34,7 @@ export const RoundSubmittedBatchEmailEvent = eventType('draft/round.submitted.em
     labId: v.string(),
     labName: v.string(),
     recipientEmail: v.string(),
-    isUpdate: v.boolean(),
+    isCreate: v.boolean(),
     attempt: EmailAttempt,
   }),
 });
@@ -50,7 +50,7 @@ export const RoundSubmittedFallbackEmailEvent = eventType('draft/round.submitted
     labId: v.string(),
     labName: v.string(),
     recipientEmail: v.string(),
-    isUpdate: v.boolean(),
+    isCreate: v.boolean(),
   }),
 });
 export type RoundSubmittedFallbackEmailSchema = v.InferOutput<

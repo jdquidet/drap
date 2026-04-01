@@ -153,7 +153,7 @@ export const actions = {
 
       const draftId = BigInt(draft);
       try {
-        const { submittedRound, roundsToNotify, isUpdate } = await db.transaction(
+        const { submittedRound, roundsToNotify, isCreate } = await db.transaction(
           async db => {
             const activeDraft = await getDraftByIdForUpdate(db, draftId);
             if (typeof activeDraft === 'undefined' || activeDraft.activePeriodEnd !== null) {
@@ -209,19 +209,19 @@ export const actions = {
               error(409);
             }
 
-            const existingChoice = await getFacultyChoiceForLabInDraftRound(
-              db,
-              draftId,
-              activeDraft.currRound,
-              lab,
-            );
-            const isUpdate = typeof existingChoice !== 'undefined';
             const { quota, selected } = await getLabQuotaAndSelectedStudentCountInDraft(
               db,
               draftId,
               lab,
             );
             assert(typeof quota !== 'undefined');
+
+            const existingChoice = await getFacultyChoiceForLabInDraftRound(
+              db,
+              draftId,
+              activeDraft.currRound,
+              lab,
+            );
 
             let baseSelected = selected;
             if (typeof existingChoice !== 'undefined') {
@@ -317,7 +317,11 @@ export const actions = {
               }
             }
 
-            return { submittedRound, roundsToNotify, isUpdate };
+            return {
+              submittedRound,
+              roundsToNotify,
+              isCreate: typeof existingChoice === 'undefined',
+            };
           },
           { isolationLevel: 'read committed' },
         );
@@ -329,9 +333,10 @@ export const actions = {
           getFacultyAndStaff(db),
         ]);
 
-        // INSERT: notify staff + all faculty; UPDATE: notify staff only
+        // CREATE: notify staff + all faculty
+        // UPDATE: notify staff only
         const initialRecipients = new Set(staffEmails);
-        if (!isUpdate) for (const person of facultyAndStaff) initialRecipients.add(person.email);
+        if (isCreate) for (const person of facultyAndStaff) initialRecipients.add(person.email);
 
         const roundSubmittedEvents = Array.from(initialRecipients, email =>
           RoundSubmittedBatchEmailEvent.create({
@@ -340,7 +345,7 @@ export const actions = {
             labId: lab,
             labName,
             recipientEmail: email,
-            isUpdate,
+            isCreate,
           }),
         );
 

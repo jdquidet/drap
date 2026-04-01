@@ -91,7 +91,7 @@ const SendEmailFormData = v.variant('event', [
     round: v.number(),
     labId: v.string(),
     recipientEmail: v.string(),
-    isUpdate: v.optional(v.boolean(), false),
+    selectionMode: v.picklist(['create', 'update']),
   }),
   v.object({
     event: v.literal('draft/lottery.intervened.email.batch'),
@@ -287,7 +287,6 @@ export const actions = {
             const data = await request.formData();
             const decoded = decode(data, {
               arrays: ['lotteryAssignments'],
-              booleans: ['isUpdate'],
               numbers: ['draftId', 'round'],
             });
 
@@ -348,7 +347,7 @@ export const actions = {
                     labId: parsed.labId,
                     labName,
                     recipientEmail: parsed.recipientEmail,
-                    isUpdate: parsed.isUpdate,
+                    isCreate: parsed.selectionMode === 'create',
                   }),
                 );
                 break;
